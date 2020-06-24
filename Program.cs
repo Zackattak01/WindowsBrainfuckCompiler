@@ -10,58 +10,20 @@ namespace BrainfuckCompiler
 	{
 		static void Main(string[] args)
 		{
-			if (!File.Exists(args[0]))
-			{
-				Console.WriteLine("The file you entered does not exist.");
-				return;
-			}
+			BuildProperties buildProperties = BuildProperties.Create(args);
 
-			List<char> commands = new List<char>();
+			List<char> commands = GetCommandsFromSource(buildProperties.FileName);
 
-			int openBracketCounter = 0;
-			int closeBracketCounter = 0;
+			
 
-			IOMode IOmode = IOMode.File;
-
-			using (FileStream fs = File.OpenRead(args[0]))
-			{
-				byte[] buf = new byte[fs.Length];
-				int c;
-
-				
-
-
-				while ((c = fs.Read(buf, 0, buf.Length)) > 0)
-				{
-					foreach (var command in Encoding.ASCII.GetChars(buf, 0, c))
-					{
-						if (IsCommand(command))
-						{
-							commands.Add(command);
-
-							if (command == '[')
-								openBracketCounter++;
-							else if (command == ']')
-								closeBracketCounter++;
-						}
-							
-
-					}
-
-				}
-			}
-
-			if(openBracketCounter != closeBracketCounter)
-			{
-				Console.WriteLine("Error:  [ count != ] count.  Make sure that every '[' has a corresponding ']'");
-				return;
-			}
+			
 
 			StreamWriter sw = new StreamWriter(File.Create("temp.c"));
 
 			//#include <stdio.h> and <stdlib.h>
 			sw.WriteLine("#include <stdio.h>");
 			sw.WriteLine("#include <stdlib.h>");
+			sw.WriteLine("#include <conio.h>");
 
 			//creates the tape in c
 			sw.WriteLine("unsigned char tape[30000];");
@@ -72,9 +34,13 @@ namespace BrainfuckCompiler
 			//creates the int main() boilerplate code
 			sw.WriteLine("int main(){");
 
-			//get the input and output files
-			sw.WriteLine($"FILE *out = fopen(\"{ args[0].Split('.')[0]}_output.txt\", \"w\");");
-			sw.WriteLine($"FILE *in = fopen(\"{ args[0].Split('.')[0]}_input.txt\", \"r\");");
+			//get the input and output files if applicable
+			if (buildProperties.IOMode == IOMode.File)
+			{
+				sw.WriteLine($"FILE *out = fopen(\"{buildProperties.FileName.Split('.')[0]}_output.txt\", \"w\");");
+				sw.WriteLine($"FILE *in = fopen(\"{buildProperties.FileName.Split('.')[0]}_input.txt\", \"r\");");
+			}
+				
 
 			sw.WriteLine("i = tape;");
 
@@ -97,10 +63,16 @@ namespace BrainfuckCompiler
 						sw.WriteLine("(*i)--;");
 						break;
 					case '.':
-						sw.WriteLine("fwrite(i, 1, 1, out);");
+						if (buildProperties.IOMode == IOMode.Console)
+							sw.WriteLine("printf(\"%c\",(*i));");
+						else
+							sw.WriteLine("fwrite(i, 1, 1, out);");
 						break;
 					case ',':
-						sw.WriteLine("fread(i, 1,1,in);");
+						if (buildProperties.IOMode == IOMode.Console)
+							sw.WriteLine("(*i)=getch();");
+						else
+							sw.WriteLine("fread(i, 1,1,in);");
 						break;
 					case '[':
 						sw.WriteLine("while((*i) != 0){");
@@ -123,7 +95,7 @@ namespace BrainfuckCompiler
 
 			//Compile the file using a built in batch script
 
-			var buildScript = new ProcessStartInfo("cmd.exe", $"/C build.bat {args[0].Split('.')[0]}")
+			var buildScript = new ProcessStartInfo("cmd.exe", $"/C build.bat {buildProperties.FileName.Split('.')[0]} {buildProperties.LeaveCSource}")
 			{
 				CreateNoWindow = false
 			};
@@ -157,11 +129,51 @@ namespace BrainfuckCompiler
 			}
 		}
 
+		static List<char> GetCommandsFromSource(string fileName)
+		{
+			List<char> commands = new List<char>();
+
+			int openBracketCounter = 0;
+			int closeBracketCounter = 0;
+
+
+			using (FileStream fs = File.OpenRead(fileName))
+			{
+				byte[] buf = new byte[fs.Length];
+				int c;
+
+
+
+
+				while ((c = fs.Read(buf, 0, buf.Length)) > 0)
+				{
+					foreach (var command in Encoding.ASCII.GetChars(buf, 0, c))
+					{
+						if (IsCommand(command))
+						{
+							commands.Add(command);
+
+							if (command == '[')
+								openBracketCounter++;
+							else if (command == ']')
+								closeBracketCounter++;
+						}
+
+
+					}
+
+				}
+
+				if (openBracketCounter != closeBracketCounter)
+				{
+					Console.WriteLine("Error:  [ count != ] count.  Make sure that every '[' has a corresponding ']'");
+					Environment.Exit(-1);
+				}
+
+				return commands;
+			}
+		}
 	}
 
-	enum IOMode
-	{
-		File,
-		Console
-	}
+
 }
