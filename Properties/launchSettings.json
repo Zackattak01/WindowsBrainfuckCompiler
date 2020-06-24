@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "BrainfuckCompiler": {
+      "commandName": "Project",
+      "commandLineArgs": "program.bf"
+    }
+  }
+}
