@@ -23,8 +23,8 @@ The executable is in the [/bin/Debug/netcoreapp3.0](/bin/Debug/netcoreapp3.0) fo
 To compile a program use 'BrainfuckCompiler <Your_bf_program>'.  This will create an executable with the same name that will also be runnable from the command line.
 
 # Build Flags
--cio: Uses console IO rather than file IO
--fio: Uses file IO rather than console IO (this flag is redundant as it is set by default)
+-cio: Uses console IO rather than file IO  
+-fio: Uses file IO rather than console IO (this flag is redundant as it is set by default)  
 -s  : Keeps the C source file instead of deleting it
 
 
