@@ -8,7 +8,7 @@ In its current form the compiler is non-optimizing, but the in the future it wil
 
 # How it works
 
-This compiler works by transpiling all your bf code into C.  After that it uses a windows D compiler to turn that c code into an windows executable.
+This compiler works by transpiling all your bf code into C.  After that it uses a windows C compiler to turn that C code into an windows executable.
 
 # Requirments
 
@@ -25,7 +25,7 @@ To compile a program use 'BrainfuckCompiler <Your_bf_program>'.  This will creat
 # Build Flags
 -cio: Uses console IO rather than file IO  
 -fio: Uses file IO rather than console IO (this flag is redundant as it is set by default)  
--s  : Keeps the C source file instead of deleting it
+-s   : Keeps the C source file instead of deleting it
 
 
 # Issues
