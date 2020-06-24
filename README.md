@@ -18,6 +18,14 @@ This program requires the [mingw-w64](https://mingw-w64.org/doku.php/download) c
 
 This program also requires the PATH environment variable to reference the bin folder of your mingw-w64 installation.
 
+# How to use the compiler
+
+The executable is in the [/bin/Debug/netcoreapp3.0](/bin/Debug/netcoreapp3.0) folder.  The program is designed to be used from the command line.
+
+To compile a program use 'BrainfuckCompiler <Your_bf_program>'.  This will create an executable with the same name that will also be runnable from the command line.
+
+
+
 # Issues
 
 1: 'gcc' is not recognized as an internal or external command, operable program or batch file.
