@@ -14,7 +14,6 @@ namespace BrainfuckCompiler
 
 			List<char> commands = GetCommandsFromSource(buildProperties.FileName);
 
-			Console.WriteLine(buildProperties.IOMode);
 
 			
 
