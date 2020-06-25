@@ -86,16 +86,21 @@ namespace BrainfuckCompiler
 			}
 
 			//more boilerplate
-			sw.WriteLine("fclose(out);");
-			sw.WriteLine("fclose(in);");
+			if (buildProperties.IOMode == IOMode.File)
+			{
+				sw.WriteLine("fclose(out);");
+				sw.WriteLine("fclose(in);");
+			}
+
 			sw.WriteLine("return 0;");
 			sw.WriteLine("}");
 
 			sw.Close();
 
 			//Compile the file using a built in batch script
+			string ExecutablePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
 
-			var buildScript = new ProcessStartInfo("cmd.exe", $"/C build.bat {buildProperties.FileName.Split('.')[0]} {buildProperties.LeaveCSource}")
+			var buildScript = new ProcessStartInfo("cmd.exe", $"/C {ExecutablePath}/build.bat {buildProperties.FileName.Split('.')[0]} {buildProperties.LeaveCSource}")
 			{
 				CreateNoWindow = false
 			};
