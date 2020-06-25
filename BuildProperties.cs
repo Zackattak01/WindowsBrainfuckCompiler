@@ -11,7 +11,7 @@ namespace BrainfuckCompiler
 
 		public string FileName { get; private set; }
 
-		public IOMode IOMode { get; private set; } = IOMode.File;
+		public IOMode IOMode { get; private set; } = IOMode.Console;
 
 		public bool LeaveCSource { get; private set; } = false;
 
@@ -22,9 +22,8 @@ namespace BrainfuckCompiler
 		 * -s  : Leave the C source file (named temp.c) instead of deleting it
 		 */
 
-		public static BuildProperties Create(string[] args)
+		public BuildProperties(string[] args)
 		{
-			BuildProperties buildProperties = new BuildProperties();
 
 			//Checks to make sure that at least a source file was provided
 			if (args.Length == 0)
@@ -42,9 +41,9 @@ namespace BrainfuckCompiler
 				Environment.Exit(-1);
 			}
 
-			buildProperties.FileName = args[FileNameLocation];
+			FileName = args[FileNameLocation];
 
-			if (!File.Exists(buildProperties.FileName))
+			if (!File.Exists(FileName))
 			{
 				Console.WriteLine("Please provide a source file.");
 				Environment.Exit(-1);
@@ -55,19 +54,18 @@ namespace BrainfuckCompiler
 				switch (arg.ToLower())
 				{
 					case "-cio":
-						buildProperties.IOMode = IOMode.Console;
+						IOMode = IOMode.Console;
 						break;
 					case "-fio":
-						buildProperties.IOMode = IOMode.File;
+						IOMode = IOMode.File;
 						break;
 					case "-s":
-						buildProperties.LeaveCSource = true;
+						LeaveCSource = true;
 						break;
 
 				}
 			}
 
-			return buildProperties;
 		}
 
 		//I understand this method isn't a good way to determine where the file is

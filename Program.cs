@@ -10,11 +10,11 @@ namespace BrainfuckCompiler
 	{
 		static void Main(string[] args)
 		{
-			BuildProperties buildProperties = BuildProperties.Create(args);
+			BuildProperties buildProperties = new BuildProperties(args);
 
 			List<char> commands = GetCommandsFromSource(buildProperties.FileName);
 
-			
+			Console.WriteLine(buildProperties.IOMode);
 
 			
 
@@ -72,7 +72,7 @@ namespace BrainfuckCompiler
 						if (buildProperties.IOMode == IOMode.Console)
 							sw.WriteLine("(*i)=getch();");
 						else
-							sw.WriteLine("fread(i, 1,1,in);");
+							sw.WriteLine("fread(i, 1, 1, in);");
 						break;
 					case '[':
 						sw.WriteLine("while((*i) != 0){");
