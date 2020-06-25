@@ -24,7 +24,7 @@ To compile a program use 'BrainfuckCompiler <Your_bf_program>'.  This will creat
 
 # Build Flags
 -cio: Uses console IO rather than file IO (this flag is redundant as it is set by default)  
--fio: Uses file IO rather than console IO 
+-fio: Uses file IO rather than console IO  
 -s: Keeps the C source file instead of deleting it
 
 
