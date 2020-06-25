@@ -49,11 +49,11 @@ namespace BrainfuckCompiler
 				{
 					case '>':
 						sw.WriteLine("i++;");
-						sw.WriteLine("if(i < tape){i=tape;}");
+						sw.WriteLine("if(i > tape + 30000){i=tape + 30000;}");
 						break;
 					case '<':
 						sw.WriteLine("i--;");
-						sw.WriteLine("if(i > tape + 30000){i=tape + 30000;}");
+						sw.WriteLine("if(i < tape){i=tape;}");
 						break;
 					case '+':
 						sw.WriteLine("(*i)++;");
