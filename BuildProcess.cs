@@ -19,8 +19,6 @@ namespace BrainfuckCompiler
 
 			List<string> cStatements = TranslateCommandsToC(commands);
 
-			//write optimization code here
-
 			WriteCToFile(cStatements);
 
 			CompileC();
@@ -119,11 +117,9 @@ namespace BrainfuckCompiler
 				{
 					case '>':
 						cCode.Add("i++;");
-						cCode.Add("if(i > tape + 30000){i=tape + 30000;}");
 						break;
 					case '<':
 						cCode.Add("i--;");
-						cCode.Add("if(i < tape){i=tape;}");
 						break;
 					case '+':
 						cCode.Add("(*i)++;");
@@ -186,22 +182,13 @@ namespace BrainfuckCompiler
 				bool breakScope = false;
 
 				//catch all for anything non-optimizable
-				if (statement != "if(i > tape + 30000){i=tape + 30000;}" && statement != "if(i < tape){i=tape;}")
+				if (statement.Contains("f") || statement.Contains("get")
+					|| statement.Contains("while") || statement.Contains("}"))
 				{
-					if (statement.Contains("f") || statement.Contains("get")
-						|| statement.Contains("while") || statement.Contains("}"))
-					{
-						breakScope = true;
-					}
-
+					breakScope = true;
 				}
-				else if(statement == "if(i > tape + 30000){i=tape + 30000;}" || statement == "if(i < tape){i=tape;}")
-					continue;
 
-
-
-
-
+				
 				//now we can check for optimizability
 				if (statement == previousOptimizableStatement && !breakScope)
 					consecutiveStatements++;
@@ -241,7 +228,11 @@ namespace BrainfuckCompiler
 				previousOptimizableStatement = statement; 
 			}
 
+			//the foreach wont catch the last statment in the list and since we know it always will be the ending '}' for the main function we can just add it here
 			optimizedCode.Add("}");
+
+			
+
 			return optimizedCode;
 		}
 
