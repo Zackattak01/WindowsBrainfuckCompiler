@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 
 namespace BrainfuckCompiler
@@ -46,6 +47,10 @@ namespace BrainfuckCompiler
 
 			int openBracketCounter = 0;
 			int closeBracketCounter = 0;
+			int scopeLevel = 0;
+
+			bool loopsAreDeadCode = true;
+			bool scopeIsInDeadCode = false;
 
 
 			using FileStream fs = File.OpenRead(fileName);
@@ -59,8 +64,30 @@ namespace BrainfuckCompiler
 			{
 				foreach (var command in Encoding.ASCII.GetChars(buf, 0, c))
 				{
+
 					if (IsCommand(command))
 					{
+						if ((command == '+' || command == '-') && loopsAreDeadCode == true)
+							loopsAreDeadCode = false;
+
+						if (command == '[' && loopsAreDeadCode)
+						{
+							scopeIsInDeadCode = true;
+							scopeLevel++;
+							continue;
+						}
+						else if (command == ']' && loopsAreDeadCode)
+						{
+							scopeLevel--;
+
+							if (scopeLevel == 0)
+								scopeIsInDeadCode = false;
+
+							continue;
+						}
+						else if (scopeIsInDeadCode)
+							continue;
+
 						commands.Add(command);
 
 						if (command == '[')
@@ -140,10 +167,10 @@ namespace BrainfuckCompiler
 							cCode.Add("fread(i, 1, 1, in);");
 						break;
 					case '[':
-						cCode.Add("while((*i) != 0){");
+							cCode.Add("while((*i) != 0){");
 						break;
 					case ']':
-						cCode.Add("}");
+							cCode.Add("}");
 						break;
 					default:
 						break;
@@ -198,11 +225,9 @@ namespace BrainfuckCompiler
 					{
 						case "i++;":
 							optimizedCode.Add(Optimized.PointerIncrement + consecutiveStatements + ";");
-							optimizedCode.Add("if(i > tape + 30000){i=tape + 30000;}");
 							break;
 						case "i--;":
 							optimizedCode.Add(Optimized.PointerDecrement + consecutiveStatements + ";");
-							optimizedCode.Add("if(i < tape){i=tape;}");
 							break;
 						case "(*i)++;":
 							optimizedCode.Add(Optimized.CellIncrement + consecutiveStatements + ";");
@@ -216,11 +241,6 @@ namespace BrainfuckCompiler
 				else
 				{
 					optimizedCode.Add(previousOptimizableStatement);
-
-					if (previousOptimizableStatement == "i++;")
-						optimizedCode.Add("if(i > tape + 30000){i=tape + 30000;}");
-					else if (previousOptimizableStatement == "i--;")
-						optimizedCode.Add("if(i < tape){i=tape;}");
 				}
 					
 
