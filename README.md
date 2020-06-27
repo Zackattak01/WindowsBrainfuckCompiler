@@ -4,8 +4,6 @@
  
  Currently this compiler will compile you bf programs into an executable that will by default read input from a file named <program_name>\_input.txt and output into a file named <program_name>\_output.txt
 
-In its current form the compiler is non-optimizing, but the in the future it will make simple optimizations.
-
 # How it works
 
 This compiler works by transpiling all your bf code into C.  After that it uses a windows C compiler to turn that C code into an windows executable.
@@ -27,7 +25,21 @@ To compile a program use 'BrainfuckCompiler <Your_bf_program>'.  This will creat
 -fio: Uses file IO rather than console IO  
 -s: Keeps the C source file instead of deleting it
 
+# Optimizations
+This compiler is capable of combining several identical instructions into one instruction.
 
+Previously a sequence of instructions like:
+`>>>>>` 
+Would be transpiled into:
+```
+i++;
+i++;
+i++;
+i++;
+i++;
+```
+However the compiler will optimize this to:
+`i+=5;`
 # Issues
 
 1: 'gcc' is not recognized as an internal or external command, operable program or batch file.
