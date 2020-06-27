@@ -9,3 +9,16 @@ C:\code\csharp\BrainfuckCompiler\BrainfuckCompiler\obj\Debug\netcoreapp3.0\Brain
 C:\code\csharp\BrainfuckCompiler\BrainfuckCompiler\obj\Debug\netcoreapp3.0\BrainfuckCompiler.AssemblyInfo.cs
 C:\code\csharp\BrainfuckCompiler\BrainfuckCompiler\obj\Debug\netcoreapp3.0\BrainfuckCompiler.dll
 C:\code\csharp\BrainfuckCompiler\BrainfuckCompiler\obj\Debug\netcoreapp3.0\BrainfuckCompiler.pdb
+C:\Users\zbrod\Desktop\file structure\code\csharp\WindowsBrainfuckCompiler\bin\Debug\netcoreapp3.0\BrainfuckCompiler.exe
+C:\Users\zbrod\Desktop\file structure\code\csharp\WindowsBrainfuckCompiler\bin\Debug\netcoreapp3.0\BrainfuckCompiler.deps.json
+C:\Users\zbrod\Desktop\file structure\code\csharp\WindowsBrainfuckCompiler\bin\Debug\netcoreapp3.0\BrainfuckCompiler.runtimeconfig.json
+C:\Users\zbrod\Desktop\file structure\code\csharp\WindowsBrainfuckCompiler\bin\Debug\netcoreapp3.0\BrainfuckCompiler.runtimeconfig.dev.json
+C:\Users\zbrod\Desktop\file structure\code\csharp\WindowsBrainfuckCompiler\bin\Debug\netcoreapp3.0\BrainfuckCompiler.dll
+C:\Users\zbrod\Desktop\file structure\code\csharp\WindowsBrainfuckCompiler\bin\Debug\netcoreapp3.0\BrainfuckCompiler.pdb
+C:\Users\zbrod\Desktop\file structure\code\csharp\WindowsBrainfuckCompiler\obj\Debug\netcoreapp3.0\BrainfuckCompiler.csprojAssemblyReference.cache
+C:\Users\zbrod\Desktop\file structure\code\csharp\WindowsBrainfuckCompiler\obj\Debug\netcoreapp3.0\BrainfuckCompiler.csproj.CoreCompileInputs.cache
+C:\Users\zbrod\Desktop\file structure\code\csharp\WindowsBrainfuckCompiler\obj\Debug\netcoreapp3.0\BrainfuckCompiler.AssemblyInfoInputs.cache
+C:\Users\zbrod\Desktop\file structure\code\csharp\WindowsBrainfuckCompiler\obj\Debug\netcoreapp3.0\BrainfuckCompiler.AssemblyInfo.cs
+C:\Users\zbrod\Desktop\file structure\code\csharp\WindowsBrainfuckCompiler\obj\Debug\netcoreapp3.0\BrainfuckCompiler.dll
+C:\Users\zbrod\Desktop\file structure\code\csharp\WindowsBrainfuckCompiler\obj\Debug\netcoreapp3.0\BrainfuckCompiler.pdb
+C:\Users\zbrod\Desktop\file structure\code\csharp\WindowsBrainfuckCompiler\obj\Debug\netcoreapp3.0\BrainfuckCompiler.genruntimeconfig.cache

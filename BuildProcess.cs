@@ -172,7 +172,7 @@ namespace BrainfuckCompiler
 		/*this function is going to be very poorly built
 		 * 
 		 * the goal of this function is to search through the C code for consecutive statments and condense them into one statement
-		 * Ex: i++; i++; i++; would be turned into i+=3
+		 * Ex: i++; i++; i++; would be turned into i+=3;
 		 */
 		private List<string> OptimizeCCode(IEnumerable<string> cCode)
 		{
@@ -261,8 +261,9 @@ namespace BrainfuckCompiler
 		{
 			//Compile the file using a built in batch script
 			string ExecutablePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+	
+			var buildScript = new ProcessStartInfo("cmd.exe", $"/C \"{@ExecutablePath}/build.bat\" {buildProperties.FileName.Split('.')[0]} {buildProperties.LeaveCSource}");
 
-			var buildScript = new ProcessStartInfo("cmd.exe", $"/C {ExecutablePath}/build.bat {buildProperties.FileName.Split('.')[0]} {buildProperties.LeaveCSource}");
 
 			Process.Start(buildScript);
 		}
