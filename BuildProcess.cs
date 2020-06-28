@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 
 namespace BrainfuckCompiler
@@ -16,14 +17,20 @@ namespace BrainfuckCompiler
 		public void Build()
 		{
 			List<char> commands = GetCommandsFromSource(buildProperties.FileName);
+			List <string> optimizedCommands = new OptimizeProcess(commands).Optimize();
 
-			List<string> cStatements = TranslateCommandsToC(commands);
+			foreach (var c in optimizedCommands)
+			{
+				Console.WriteLine(c);
+			}
 
-			//write optimization code here
+			//List<string> cStatements = TranslateCommandsToC(commands);
 
-			WriteCToFile(cStatements);
+			//cStatements = new OptimizeProcess(commands).Optimize();
 
-			CompileC();
+			//WriteCToFile(cStatements);
+
+			//CompileC();
 		}
 
 		private bool IsCommand(char c)
@@ -61,8 +68,11 @@ namespace BrainfuckCompiler
 			{
 				foreach (var command in Encoding.ASCII.GetChars(buf, 0, c))
 				{
+
 					if (IsCommand(command))
 					{
+						
+
 						commands.Add(command);
 
 						if (command == '[')
@@ -84,7 +94,7 @@ namespace BrainfuckCompiler
 
 			return commands;
 		}
-
+		
 		private List<string> TranslateCommandsToC(IEnumerable<char> commands)
 		{
 			List<string> cCode = new List<string>();
@@ -119,11 +129,9 @@ namespace BrainfuckCompiler
 				{
 					case '>':
 						cCode.Add("i++;");
-						cCode.Add("if(i > tape + 30000){i=tape + 30000;}");
 						break;
 					case '<':
 						cCode.Add("i--;");
-						cCode.Add("if(i < tape){i=tape;}");
 						break;
 					case '+':
 						cCode.Add("(*i)++;");
@@ -144,10 +152,10 @@ namespace BrainfuckCompiler
 							cCode.Add("fread(i, 1, 1, in);");
 						break;
 					case '[':
-						cCode.Add("while((*i) != 0){");
+							cCode.Add("while((*i) != 0){");
 						break;
 					case ']':
-						cCode.Add("}");
+							cCode.Add("}");
 						break;
 					default:
 						break;
@@ -164,85 +172,8 @@ namespace BrainfuckCompiler
 			cCode.Add("return 0;");
 			cCode.Add("}");
 
-			List<string> optimizedCode = OptimizeCCode(cCode);
 
-			return optimizedCode;
-		}
-
-		/*this function is going to be very poorly built
-		 * 
-		 * the goal of this function is to search through the C code for consecutive statments and condense them into one statement
-		 * Ex: i++; i++; i++; would be turned into i+=3;
-		 */
-		private List<string> OptimizeCCode(IEnumerable<string> cCode)
-		{
-			int consecutiveStatements = 1;
-			string previousOptimizableStatement = "";
-
-			List<string> optimizedCode = new List<string>();
-
-			foreach (var statement in cCode)
-			{
-				bool breakScope = false;
-
-				//catch all for anything non-optimizable
-				if (statement != "if(i > tape + 30000){i=tape + 30000;}" && statement != "if(i < tape){i=tape;}")
-				{
-					if (statement.Contains("f") || statement.Contains("get")
-						|| statement.Contains("while") || statement.Contains("}"))
-					{
-						breakScope = true;
-					}
-
-				}
-				else if(statement == "if(i > tape + 30000){i=tape + 30000;}" || statement == "if(i < tape){i=tape;}")
-					continue;
-
-
-
-
-
-				//now we can check for optimizability
-				if (statement == previousOptimizableStatement && !breakScope)
-					consecutiveStatements++;
-				else if (statement != previousOptimizableStatement && consecutiveStatements > 1)
-				{
-					switch (previousOptimizableStatement)
-					{
-						case "i++;":
-							optimizedCode.Add(Optimized.PointerIncrement + consecutiveStatements + ";");
-							optimizedCode.Add("if(i > tape + 30000){i=tape + 30000;}");
-							break;
-						case "i--;":
-							optimizedCode.Add(Optimized.PointerDecrement + consecutiveStatements + ";");
-							optimizedCode.Add("if(i < tape){i=tape;}");
-							break;
-						case "(*i)++;":
-							optimizedCode.Add(Optimized.CellIncrement + consecutiveStatements + ";");
-							break;
-						case "(*i)--;":
-							optimizedCode.Add(Optimized.CellDecrement + consecutiveStatements + ";");
-							break;
-					}
-					consecutiveStatements = 1;
-				}
-				else
-				{
-					optimizedCode.Add(previousOptimizableStatement);
-
-					if (previousOptimizableStatement == "i++;")
-						optimizedCode.Add("if(i > tape + 30000){i=tape + 30000;}");
-					else if (previousOptimizableStatement == "i--;")
-						optimizedCode.Add("if(i < tape){i=tape;}");
-				}
-					
-
-
-				previousOptimizableStatement = statement; 
-			}
-
-			optimizedCode.Add("}");
-			return optimizedCode;
+			return cCode;
 		}
 
 		private void WriteCToFile(IEnumerable<string> CStatements)
@@ -268,12 +199,6 @@ namespace BrainfuckCompiler
 			Process.Start(buildScript);
 		}
 
-		struct Optimized
-		{
-			public const string PointerIncrement = "i+=";
-			public const string PointerDecrement = "i-=";
-			public const string CellIncrement = "(*i)+=";
-			public const string CellDecrement = "(*i)-=";
-		}
+
 	}
 }
