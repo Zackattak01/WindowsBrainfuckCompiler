@@ -2,10 +2,11 @@
  Turns brainfuck programs into windows executables.
  
 # Features
-The Compiler supports:
-Dead Code Removal
-Consecutive Instruction Compression
-File and Console IO
+The Compiler supports:  
+Dead Code Removal  (experimental)
+Consecutive Instruction Compression  
+Out of Bounds Analysis (experimental)
+File and Console IO  
 
 # How it works
 
@@ -22,6 +23,8 @@ This program also requires the PATH environment variable to reference the bin fo
 The executable is in the [/bin/Debug/netcoreapp3.0](/bin/Debug/netcoreapp3.0) folder.  The program is designed to be used from the command line.
 
 To compile a program use 'BrainfuckCompiler <Your_bf_program>'.  This will create an executable with the same name that will also be runnable from the command line.
+
+If using the build flag "-fio" the IO files will be named <program_name>\_input.txt and <program_name>\_output.txt the output file will be created at runtime if it is not precreated but the input file will not, so it needs to be created before runtime.
 
 # Build Flags
 -cio: Uses console IO rather than file IO (this flag is redundant as it is set by default)  
