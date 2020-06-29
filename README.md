@@ -1,8 +1,11 @@
 # BrainfuckCompiler
  Turns brainfuck programs into windows executables.
  
- 
- Currently this compiler will compile you bf programs into an executable that will by default read input from a file named <program_name>\_input.txt and output into a file named <program_name>\_output.txt
+# Features
+The Compiler supports:
+Dead Code Removal
+Consecutive Instruction Compression
+File and Console IO
 
 # How it works
 
@@ -41,6 +44,7 @@ i++;
 However the compiler will optimize this to:
 `i+=5;`
 # Issues
+First of all, going out of bounds on the tape is completly undefined.  The compiler will tell you if it thinks your program will go out of bounds.  However, if Compiler thinks the program will go out of bounds it will not be able to complete optimization.  The program will still compile, but unpredictable and unexpected behaivour is fully expected.
 
 1: 'gcc' is not recognized as an internal or external command, operable program or batch file.
 
