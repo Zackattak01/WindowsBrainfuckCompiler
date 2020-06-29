@@ -22,45 +22,100 @@ namespace BrainfuckCompiler
 
 		private void RemoveDeadCode()
 		{
-			bool DeadCode = true;
-			bool CurrentCellIsRuntimeDependent = false;
-
+			bool InLoop = false;
+			bool InDeadCode = true;
 			bool AbortOptimizationDueToOutOfBounds = false;
 
 			int i = 0;
+			int scopeLevel = 0;
+
+			Dictionary<int, bool> levelPrint = new Dictionary<int, bool>();
 
 			EmulationData[] cells = new EmulationData[30000];
 
+			for (int x = 0; x < cells.Length; x++)
+			{
+				cells[x] = new EmulationData();
+			}
 
 			List<char> optimizedCommands = new List<char>();
 			foreach (var command in commands)
 			{
-
-
-				switch (command)
+				if (command == '[')
 				{
-					case '+':
-						cells[i].Value++;
-						break;
-					case '-':
-						cells[i].Value--;
-						break;
-					case '>':
-						i++;
-						if (i++ >= 30000)
-							AbortOptimizationDueToOutOfBounds = true;
-						break;
-					case '<':
-						i--;
-						if (i--! <= 0)
-							AbortOptimizationDueToOutOfBounds = true;
-						break;
-					case ',':
-						CurrentCellIsRuntimeDependent = true;
-						break;
-					default:
-						break;
+					InLoop = true;
+					scopeLevel++;
+
+					if (cells[i].CellIsRuntimeDependent || cells[i].Value != 0)
+					{
+						optimizedCommands.Add(command);
+						InDeadCode = false;
+
+						levelPrint.Add(scopeLevel, true);
+					}
+					else
+					{
+						levelPrint.Add(scopeLevel, false);
+						InDeadCode = true;
+					}
+						
+						
 				}
+				else if(command == ']')
+				{
+					//not checking to see if it was succesful because every scope level should be populated
+					levelPrint.TryGetValue(scopeLevel, out bool print);
+					levelPrint.Remove(scopeLevel);
+
+					if (print)
+						optimizedCommands.Add(command);
+
+					scopeLevel--;
+
+
+					if (scopeLevel == 0)
+					{
+						InLoop = false;
+						InDeadCode = false;
+						levelPrint.Clear();
+					}
+
+				}
+				else
+				{
+					if (InDeadCode)
+						continue;
+
+
+					
+					switch (command)
+					{
+						case '+':
+							cells[i].Value++;
+							break;
+						case '-':
+							cells[i].Value--;
+							break;
+						case '>':
+							i++;
+							if (i++ >= 30000)
+								AbortOptimizationDueToOutOfBounds = true;
+							break;
+						case '<':
+							i--;
+							if (i--! <= 0)
+								AbortOptimizationDueToOutOfBounds = true;
+							break;
+						case ',':
+							cells[i].CellIsRuntimeDependent = true;
+							break;
+						default:
+							break;
+					}
+					optimizedCommands.Add(command);
+
+				}
+				
 				if (AbortOptimizationDueToOutOfBounds)
 				{
 					//send ominous message so that the user knows they messed up
@@ -68,13 +123,10 @@ namespace BrainfuckCompiler
 					break;
 				}
 
-
-				//if the cell is dependent on runtime input then there is no optimizaton to be done
-				if (cells[i].CellIsRuntimeDependent)
-					continue;
-
-
 			}
+
+			if(!AbortOptimizationDueToOutOfBounds)
+				commands = optimizedCommands;
 		}
 
 		private List<string> CondenseCommands()
@@ -133,6 +185,12 @@ namespace BrainfuckCompiler
 		{
 			public bool CellIsRuntimeDependent { get; set; } = false;
 			public byte Value { get; set; } = 0;
+
+			/*public EmulationData()
+			{
+				CellIsRuntimeDependent = false;
+				Value = 0;
+			}*/
 		}
 
 		/*private List<string> CondenseCStatements(IEnumerable<string> cCode)

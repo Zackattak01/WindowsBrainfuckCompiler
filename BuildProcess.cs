@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
+using System.Linq;
 
 namespace BrainfuckCompiler
 {
@@ -19,18 +20,14 @@ namespace BrainfuckCompiler
 			List<char> commands = GetCommandsFromSource(buildProperties.FileName);
 			List <string> optimizedCommands = new OptimizeProcess(commands).Optimize();
 
-			foreach (var c in optimizedCommands)
-			{
-				Console.WriteLine(c);
-			}
 
-			//List<string> cStatements = TranslateCommandsToC(commands);
+			List<string> cStatements = TranslateCommandsToC(optimizedCommands);
 
 			//cStatements = new OptimizeProcess(commands).Optimize();
 
-			//WriteCToFile(cStatements);
+			WriteCToFile(cStatements);
 
-			//CompileC();
+			CompileC();
 		}
 
 		private bool IsCommand(char c)
@@ -95,7 +92,7 @@ namespace BrainfuckCompiler
 			return commands;
 		}
 		
-		private List<string> TranslateCommandsToC(IEnumerable<char> commands)
+		private List<string> TranslateCommandsToC(IEnumerable<string> commands)
 		{
 			List<string> cCode = new List<string>();
 
@@ -125,41 +122,72 @@ namespace BrainfuckCompiler
 
 			foreach (var command in commands)
 			{
-				switch (command)
+				//this is a non compressed command
+				if (command.Length == 1)
 				{
-					case '>':
-						cCode.Add("i++;");
-						break;
-					case '<':
-						cCode.Add("i--;");
-						break;
-					case '+':
-						cCode.Add("(*i)++;");
-						break;
-					case '-':
-						cCode.Add("(*i)--;");
-						break;
-					case '.':
-						if (buildProperties.IOMode == IOMode.Console)
-							cCode.Add("printf(\"%c\",(*i));");
-						else
-							cCode.Add("fwrite(i, 1, 1, out);");
-						break;
-					case ',':
-						if (buildProperties.IOMode == IOMode.Console)
-							cCode.Add("(*i)=getch();");
-						else
-							cCode.Add("fread(i, 1, 1, in);");
-						break;
-					case '[':
+
+
+					switch (command)
+					{
+						case ">":
+							cCode.Add("i++;");
+							break;
+						case "<":
+							cCode.Add("i--;");
+							break;
+						case "+":
+							cCode.Add("(*i)++;");
+							break;
+						case "-":
+							cCode.Add("(*i)--;");
+							break;
+						case ".":
+							if (buildProperties.IOMode == IOMode.Console)
+								cCode.Add("printf(\"%c\",(*i));");
+							else
+								cCode.Add("fwrite(i, 1, 1, out);");
+							break;
+						case ",":
+							if (buildProperties.IOMode == IOMode.Console)
+								cCode.Add("(*i)=getch();");
+							else
+								cCode.Add("fread(i, 1, 1, in);");
+							break;
+						case "[":
 							cCode.Add("while((*i) != 0){");
-						break;
-					case ']':
+							break;
+						case "]":
 							cCode.Add("}");
-						break;
-					default:
-						break;
+							break;
+						default:
+							break;
+					}
 				}
+				else if(command.Length >= 2) //this is a compressed command
+				{
+					char switchChar = command.First();
+					string number = command.Replace(switchChar.ToString(), "");
+
+					switch (switchChar)
+					{
+						case '>':
+							cCode.Add($"i+={number};");
+							break;
+						case '<':
+							cCode.Add($"i-={number};");
+							break;
+						case '+':
+							cCode.Add($"(*i)+={number};");
+							break;
+						case '-':
+							cCode.Add($"(*i)-={number};");
+							break;
+						default:
+							Console.WriteLine("Something went wrong");
+							break;
+					}
+				}else
+					Console.WriteLine("something else went wrong: " + command);
 			}
 
 			//more boilerplate
