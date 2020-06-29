@@ -3,9 +3,9 @@
  
 # Features
 The Compiler supports:  
-Dead Code Removal  (experimental)
+Dead Code Removal  (experimental)  
 Consecutive Instruction Compression  
-Out of Bounds Analysis (experimental)
+Out of Bounds Analysis (experimental)  
 File and Console IO  
 
 # How it works
