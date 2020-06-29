@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace BrainfuckCompiler
 {
@@ -20,10 +21,11 @@ namespace BrainfuckCompiler
 			return CondenseCommands();
 		}
 
+		//TODO: Emulate loop functionality
 		private void RemoveDeadCode()
 		{
 			bool InLoop = false;
-			bool InDeadCode = true;
+			bool InDeadCode = false;
 			bool AbortOptimizationDueToOutOfBounds = false;
 
 			int i = 0;
@@ -67,8 +69,12 @@ namespace BrainfuckCompiler
 					levelPrint.TryGetValue(scopeLevel, out bool print);
 					levelPrint.Remove(scopeLevel);
 
-					if (print)
+					//checks for an empty loop
+					if(optimizedCommands.Count != 0 && optimizedCommands.Last() == '[')
+						optimizedCommands.RemoveAt(optimizedCommands.Count-1);
+					else if (print)
 						optimizedCommands.Add(command);
+					
 
 					scopeLevel--;
 
@@ -103,7 +109,7 @@ namespace BrainfuckCompiler
 							break;
 						case '<':
 							i--;
-							if (i--! <= 0)
+							if (i-- < 0)
 								AbortOptimizationDueToOutOfBounds = true;
 							break;
 						case ',':
@@ -118,7 +124,7 @@ namespace BrainfuckCompiler
 				
 				if (AbortOptimizationDueToOutOfBounds)
 				{
-					//send ominous message so that the user knows they messed up
+					//send ominous message so that the user knows they messed up (Currently this message will appear even if the program is not out of bounds)
 					Console.WriteLine("WARNING: Code optimization could not be completed because the program supplied goes out of bounds.  Compilation will continue but, the program will most likely act erratically.");
 					break;
 				}
@@ -127,6 +133,11 @@ namespace BrainfuckCompiler
 
 			if(!AbortOptimizationDueToOutOfBounds)
 				commands = optimizedCommands;
+		}
+
+		private void EmulateWhileLoop(ref EmulationData[] cells)
+		{
+
 		}
 
 		private List<string> CondenseCommands()
