@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
+using System.Linq;
 
 namespace BrainfuckCompiler
 {
@@ -17,8 +18,12 @@ namespace BrainfuckCompiler
 		public void Build()
 		{
 			List<char> commands = GetCommandsFromSource(buildProperties.FileName);
+			List <string> optimizedCommands = new OptimizeProcess(commands).Optimize();
 
-			List<string> cStatements = TranslateCommandsToC(commands);
+
+			List<string> cStatements = TranslateCommandsToC(optimizedCommands);
+
+			//cStatements = new OptimizeProcess(commands).Optimize();
 
 			WriteCToFile(cStatements);
 
@@ -47,10 +52,6 @@ namespace BrainfuckCompiler
 
 			int openBracketCounter = 0;
 			int closeBracketCounter = 0;
-			int scopeLevel = 0;
-
-			bool loopsAreDeadCode = true;
-			bool scopeIsInDeadCode = false;
 
 
 			using FileStream fs = File.OpenRead(fileName);
@@ -67,26 +68,7 @@ namespace BrainfuckCompiler
 
 					if (IsCommand(command))
 					{
-						if ((command == '+' || command == '-') && loopsAreDeadCode == true)
-							loopsAreDeadCode = false;
-
-						if (command == '[' && loopsAreDeadCode)
-						{
-							scopeIsInDeadCode = true;
-							scopeLevel++;
-							continue;
-						}
-						else if (command == ']' && loopsAreDeadCode)
-						{
-							scopeLevel--;
-
-							if (scopeLevel == 0)
-								scopeIsInDeadCode = false;
-
-							continue;
-						}
-						else if (scopeIsInDeadCode)
-							continue;
+						
 
 						commands.Add(command);
 
@@ -109,8 +91,8 @@ namespace BrainfuckCompiler
 
 			return commands;
 		}
-
-		private List<string> TranslateCommandsToC(IEnumerable<char> commands)
+		
+		private List<string> TranslateCommandsToC(IEnumerable<string> commands)
 		{
 			List<string> cCode = new List<string>();
 
@@ -140,41 +122,73 @@ namespace BrainfuckCompiler
 
 			foreach (var command in commands)
 			{
-				switch (command)
+				//this is a non compressed command
+				if (command.Length == 1)
 				{
-					case '>':
-						cCode.Add("i++;");
-						break;
-					case '<':
-						cCode.Add("i--;");
-						break;
-					case '+':
-						cCode.Add("(*i)++;");
-						break;
-					case '-':
-						cCode.Add("(*i)--;");
-						break;
-					case '.':
-						if (buildProperties.IOMode == IOMode.Console)
-							cCode.Add("printf(\"%c\",(*i));");
-						else
-							cCode.Add("fwrite(i, 1, 1, out);");
-						break;
-					case ',':
-						if (buildProperties.IOMode == IOMode.Console)
-							cCode.Add("(*i)=getch();");
-						else
-							cCode.Add("fread(i, 1, 1, in);");
-						break;
-					case '[':
+					switch (command)
+					{ 
+						case "0":
+							cCode.Add("(*i)=0;");
+							break;
+						case ">":
+							cCode.Add("i++;");
+							break;
+						case "<":
+							cCode.Add("i--;");
+							break;
+						case "+":
+							cCode.Add("(*i)++;");
+							break;
+						case "-":
+							cCode.Add("(*i)--;");
+							break;
+						case ".":
+							if (buildProperties.IOMode == IOMode.Console)
+								cCode.Add("printf(\"%c\",(*i));");
+							else
+								cCode.Add("fwrite(i, 1, 1, out);");
+							break;
+						case ",":
+							if (buildProperties.IOMode == IOMode.Console)
+								cCode.Add("(*i)=getch();");
+							else
+								cCode.Add("fread(i, 1, 1, in);");
+							break;
+						case "[":
 							cCode.Add("while((*i) != 0){");
-						break;
-					case ']':
+							break;
+						case "]":
 							cCode.Add("}");
-						break;
-					default:
-						break;
+							break;
+						default:
+							break;
+					}
 				}
+				else if(command.Length >= 2) //this is a compressed command
+				{
+					char switchChar = command.First();
+					string number = command.Replace(switchChar.ToString(), "");
+
+					switch (switchChar)
+					{
+						case '>':
+							cCode.Add($"i+={number};");
+							break;
+						case '<':
+							cCode.Add($"i-={number};");
+							break;
+						case '+':
+							cCode.Add($"(*i)+={number};");
+							break;
+						case '-':
+							cCode.Add($"(*i)-={number};");
+							break;
+						default:
+							Console.WriteLine("Something went wrong");
+							break;
+					}
+				}else
+					Console.WriteLine("something else went wrong: " + command);
 			}
 
 			//more boilerplate
@@ -187,73 +201,8 @@ namespace BrainfuckCompiler
 			cCode.Add("return 0;");
 			cCode.Add("}");
 
-			List<string> optimizedCode = OptimizeCCode(cCode);
 
-			return optimizedCode;
-		}
-
-		/*this function is going to be very poorly built
-		 * 
-		 * the goal of this function is to search through the C code for consecutive statments and condense them into one statement
-		 * Ex: i++; i++; i++; would be turned into i+=3;
-		 */
-		private List<string> OptimizeCCode(IEnumerable<string> cCode)
-		{
-			int consecutiveStatements = 1;
-			string previousOptimizableStatement = "";
-
-			List<string> optimizedCode = new List<string>();
-
-			foreach (var statement in cCode)
-			{
-				bool breakScope = false;
-
-				//catch all for anything non-optimizable
-				if (statement.Contains("f") || statement.Contains("get")
-					|| statement.Contains("while") || statement.Contains("}"))
-				{
-					breakScope = true;
-				}
-
-				
-				//now we can check for optimizability
-				if (statement == previousOptimizableStatement && !breakScope)
-					consecutiveStatements++;
-				else if (statement != previousOptimizableStatement && consecutiveStatements > 1)
-				{
-					switch (previousOptimizableStatement)
-					{
-						case "i++;":
-							optimizedCode.Add(Optimized.PointerIncrement + consecutiveStatements + ";");
-							break;
-						case "i--;":
-							optimizedCode.Add(Optimized.PointerDecrement + consecutiveStatements + ";");
-							break;
-						case "(*i)++;":
-							optimizedCode.Add(Optimized.CellIncrement + consecutiveStatements + ";");
-							break;
-						case "(*i)--;":
-							optimizedCode.Add(Optimized.CellDecrement + consecutiveStatements + ";");
-							break;
-					}
-					consecutiveStatements = 1;
-				}
-				else
-				{
-					optimizedCode.Add(previousOptimizableStatement);
-				}
-					
-
-
-				previousOptimizableStatement = statement; 
-			}
-
-			//the foreach wont catch the last statment in the list and since we know it always will be the ending '}' for the main function we can just add it here
-			optimizedCode.Add("}");
-
-			
-
-			return optimizedCode;
+			return cCode;
 		}
 
 		private void WriteCToFile(IEnumerable<string> CStatements)
@@ -279,12 +228,6 @@ namespace BrainfuckCompiler
 			Process.Start(buildScript);
 		}
 
-		struct Optimized
-		{
-			public const string PointerIncrement = "i+=";
-			public const string PointerDecrement = "i-=";
-			public const string CellIncrement = "(*i)+=";
-			public const string CellDecrement = "(*i)-=";
-		}
+
 	}
 }
