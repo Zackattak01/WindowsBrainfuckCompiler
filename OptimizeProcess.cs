@@ -27,8 +27,6 @@ namespace BrainfuckCompiler
 			//we convert to string to easily use the replace functionality to convert known constructs
 			string commandsAsString = new string(commands.ToArray());
 
-			Console.WriteLine(commandsAsString);
-
 			commandsAsString = commandsAsString.Replace("[-]", "0");
 			commandsAsString = commandsAsString.Replace("[+]", "0");
 
