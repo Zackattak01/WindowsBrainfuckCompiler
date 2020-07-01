@@ -125,10 +125,11 @@ namespace BrainfuckCompiler
 				//this is a non compressed command
 				if (command.Length == 1)
 				{
-
-
 					switch (command)
-					{
+					{ 
+						case "0":
+							cCode.Add("(*i)=0;");
+							break;
 						case ">":
 							cCode.Add("i++;");
 							break;

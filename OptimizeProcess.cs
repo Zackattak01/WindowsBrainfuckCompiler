@@ -16,129 +16,87 @@ namespace BrainfuckCompiler
 
 		public List<string> Optimize()
 		{
+			ReplaceKnownConstructs();
 			RemoveDeadCode();
 
 			return CondenseCommands();
 		}
 
+		private void ReplaceKnownConstructs()
+		{
+			//we convert to string to easily use the replace functionality to convert known constructs
+			string commandsAsString = new string(commands.ToArray());
+
+			Console.WriteLine(commandsAsString);
+
+			commandsAsString = commandsAsString.Replace("[-]", "0");
+			commandsAsString = commandsAsString.Replace("[+]", "0");
+
+			while(commandsAsString.Contains("[]"))
+				commandsAsString = commandsAsString.Replace("[]", "");
+
+
+			commands = commandsAsString.ToList();
+			
+		}
+
 		//TODO: Emulate loop functionality
 		private void RemoveDeadCode()
 		{
-			bool InLoop = false;
-			bool InDeadCode = false;
-			bool AbortOptimizationDueToOutOfBounds = false;
-
-			int i = 0;
-			int scopeLevel = 0;
-
-			Dictionary<int, bool> levelPrint = new Dictionary<int, bool>();
-
-			EmulationData[] cells = new EmulationData[30000];
-
-			for (int x = 0; x < cells.Length; x++)
-			{
-				cells[x] = new EmulationData();
-			}
-
 			List<char> optimizedCommands = new List<char>();
+
+			char previousCommand = '\0';
+
+			bool InDeadCode = true;
+
+			int scopeLevel = 0;
+			int scopeLevelOfDeadCode = 0;
+
 			foreach (var command in commands)
 			{
-				if (command == '[')
+				if ((command == '+' || command == '-') && InDeadCode && scopeLevel == 0)
+					InDeadCode = false;
+
+				if(command == '[')
 				{
-					InLoop = true;
 					scopeLevel++;
 
-					if (cells[i].CellIsRuntimeDependent || cells[i].Value != 0)
+					if(!InDeadCode && previousCommand == '0' || previousCommand == ']')
 					{
-						optimizedCommands.Add(command);
-						InDeadCode = false;
-
-						levelPrint.Add(scopeLevel, true);
-					}
-					else
-					{
-						levelPrint.Add(scopeLevel, false);
+						scopeLevelOfDeadCode = scopeLevel;
 						InDeadCode = true;
 					}
-						
-						
-				}
-				else if(command == ']')
-				{
-					//not checking to see if it was succesful because every scope level should be populated
-					levelPrint.TryGetValue(scopeLevel, out bool print);
-					levelPrint.Remove(scopeLevel);
-
-					//checks for an empty loop
-					if(optimizedCommands.Count != 0 && optimizedCommands.Last() == '[')
-						optimizedCommands.RemoveAt(optimizedCommands.Count-1);
-					else if (print)
-						optimizedCommands.Add(command);
-					
-
-					scopeLevel--;
-
-
-					if (scopeLevel == 0)
-					{
-						InLoop = false;
-						InDeadCode = false;
-						levelPrint.Clear();
-					}
-
-				}
-				else
-				{
-					if (InDeadCode)
-						continue;
-
-
-					
-					switch (command)
-					{
-						case '+':
-							cells[i].Value++;
-							break;
-						case '-':
-							cells[i].Value--;
-							break;
-						case '>':
-							i++;
-							if (i++ >= 30000)
-								AbortOptimizationDueToOutOfBounds = true;
-							break;
-						case '<':
-							i--;
-							if (i-- < 0)
-								AbortOptimizationDueToOutOfBounds = true;
-							break;
-						case ',':
-							cells[i].CellIsRuntimeDependent = true;
-							break;
-						default:
-							break;
-					}
-					optimizedCommands.Add(command);
 
 				}
 				
-				if (AbortOptimizationDueToOutOfBounds)
+
+				if (!InDeadCode)
+					optimizedCommands.Add(command);
+
+				if (command == ']')
 				{
-					//send ominous message so that the user knows they messed up (Currently this message will appear even if the program is not out of bounds)
-					Console.WriteLine("WARNING: Code optimization could not be completed because the program supplied goes out of bounds.  Compilation will continue but, the program will most likely act erratically.");
-					break;
-				}
+					if (scopeLevel == scopeLevelOfDeadCode)
+					{
+						InDeadCode = false;
+						scopeLevelOfDeadCode = 0;
+					}
+
+					scopeLevel--;
+				} 
+
+				previousCommand = command;
+	
 
 			}
-
-			if(!AbortOptimizationDueToOutOfBounds)
-				commands = optimizedCommands;
-		}
-
-		private void EmulateWhileLoop(ref EmulationData[] cells)
-		{
+			commands = optimizedCommands;
 
 		}
+
+		
+
+
+
+		
 
 		private List<string> CondenseCommands()
 		{
