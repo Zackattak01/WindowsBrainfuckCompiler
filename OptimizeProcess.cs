@@ -27,11 +27,14 @@ namespace BrainfuckCompiler
 			//we convert to string to easily use the replace functionality to convert known constructs
 			string commandsAsString = new string(commands.ToArray());
 
+			//remove all empty loops
+			while (commandsAsString.Contains("[]"))
+				commandsAsString = commandsAsString.Replace("[]", "");
+
 			commandsAsString = commandsAsString.Replace("[-]", "0");
 			commandsAsString = commandsAsString.Replace("[+]", "0");
 
-			while(commandsAsString.Contains("[]"))
-				commandsAsString = commandsAsString.Replace("[]", "");
+
 
 
 			commands = commandsAsString.ToList();
@@ -89,13 +92,7 @@ namespace BrainfuckCompiler
 			}
 			commands = optimizedCommands;
 
-		}
-
-		
-
-
-
-		
+		}		
 
 		private List<string> CondenseCommands()
 		{
@@ -161,86 +158,6 @@ namespace BrainfuckCompiler
 			}*/
 		}
 
-		/*private List<string> CondenseCStatements(IEnumerable<string> cCode)
-		{
-			int consecutiveStatements = 1;
-			string previousOptimizableStatement = "";
-
-			List<string> optimizedCode = new List<string>();
-
-			foreach (var statement in cCode)
-			{
-				bool breakScope = false;
-
-				//catch all for anything non-optimizable
-				if (statement.Contains("f") || statement.Contains("get")
-					|| statement.Contains("while") || statement.Contains("}"))
-				{
-					breakScope = true;
-				}
-
-
-				//now we can check for optimizability
-				if (statement == previousOptimizableStatement && !breakScope)
-					consecutiveStatements++;
-				else if (statement != previousOptimizableStatement && consecutiveStatements > 1)
-				{
-					switch (previousOptimizableStatement)
-					{
-						case "i++;":
-							optimizedCode.Add(Optimized.PointerIncrement + consecutiveStatements + ";");
-							break;
-						case "i--;":
-							optimizedCode.Add(Optimized.PointerDecrement + consecutiveStatements + ";");
-							break;
-						case "(*i)++;":
-							optimizedCode.Add(Optimized.CellIncrement + consecutiveStatements + ";");
-							break;
-						case "(*i)--;":
-							optimizedCode.Add(Optimized.CellDecrement + consecutiveStatements + ";");
-							break;
-					}
-					consecutiveStatements = 1;
-				}
-				else
-				{
-					optimizedCode.Add(previousOptimizableStatement);
-				}
-
-
-
-				previousOptimizableStatement = statement;
-			}
-
-			//the foreach wont catch the last statment in the list and since we know it always will be the ending '}' for the main function we can just add it here
-			optimizedCode.Add("}");
-
-
-
-			return optimizedCode;
-		}*/
-
-		/* This was the code for dead code detection
-		 * if ((command == '+' || command == '-') && loopsAreDeadCode == true)
-							loopsAreDeadCode = false;
-
-						if (command == '[' && loopsAreDeadCode)
-						{
-							scopeIsInDeadCode = true;
-							scopeLevel++;
-							continue;
-						}
-						else if (command == ']' && loopsAreDeadCode)
-						{
-							scopeLevel--;
-
-							if (scopeLevel == 0)
-								scopeIsInDeadCode = false;
-
-							continue;
-						}
-						else if (scopeIsInDeadCode)
-							continue;
-							*/
+	
 	}
 }
