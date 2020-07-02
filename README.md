@@ -3,9 +3,9 @@
  
 # Features
 The Compiler supports:  
-Dead Code Removal  (experimental)  
+Dead Code Removal  
 Consecutive Instruction Compression  
-Out of Bounds Analysis (experimental)  
+Known Construct Replacement  
 File and Console IO  
 
 # How it works
@@ -32,6 +32,9 @@ If using the build flag "-fio" the IO files will be named <program_name>\_input.
 -s: Keeps the C source file instead of deleting it
 
 # Optimizations
+
+## Consecutive Instruction Compression:
+
 This compiler is capable of combining several identical instructions into one instruction.
 
 Previously a sequence of instructions like:
@@ -45,9 +48,31 @@ i++;
 i++;
 ```
 However the compiler will optimize this to:
-`i+=5;`
+`i+=5;`  
+
+## Dead Code Removal:  
+The compiler will remove code that is know to be dead.
+
+Loops at the begining of a program:
+`[this wont be compiled!.,.+--+.<>>>><<][Neither will this!>><+-]`
+
+A loop following another loop
+`+[this will be compiled][this won't]`
+
+
+## Known Construct Replacement
+
+Several common constructs are used in brainfuck such as:
+```
+[-] and [+]
+```
+These two constructs always set the cell to zero so instead of using a loop to do it we can directly set the cell to zero.
+
+Empty loops (`[]`) are entirly eliminated from the program wether or not they run.
+
 # Issues
-First of all, going out of bounds on the tape is completly undefined.  The compiler will tell you if it thinks your program will go out of bounds.  However, if Compiler thinks the program will go out of bounds it will not be able to complete optimization.  The program will still compile, but unpredictable and unexpected behaivour is fully expected.
+
+0: Going out of bounds on the tape is completly undefined.  The program will still compile, but unpredictable and unexpected behaivour is fully expected.
 
 1: 'gcc' is not recognized as an internal or external command, operable program or batch file.
 
