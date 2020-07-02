@@ -53,10 +53,10 @@ However the compiler will optimize this to:
 ## Dead Code Removal:  
 The compiler will remove code that is know to be dead.
 
-Loops at the begining of a program:
+Loops at the begining of a program:  
 ```[this wont be compiled!.,.+--+.<>>>><<][Neither will this!>><+-]```
 
-A loop following another loop
+A loop following another loop:  
 ```+[this will be compiled][this won't]```
 
 
