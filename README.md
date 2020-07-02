@@ -66,7 +66,7 @@ Several common constructs are used in brainfuck such as: `[-] and [+]`
 
 These two constructs always set the cell to zero so instead of using a loop to do it we can directly set the cell to zero.
 
-Empty loops (`[]`) are entirly eliminated from the program wether or not they run.
+Empty loops (`[]`) are entirly eliminated from the program whether or not they run.
 
 # Issues
 
