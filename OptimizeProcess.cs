@@ -45,7 +45,8 @@ namespace BrainfuckCompiler
 
 			char previousCommand = '\0';
 
-			bool InDeadCode = true;
+			bool InDeadCode = false;
+			bool LoopsAreDeadCode = true;
 
 			int scopeLevel = 0;
 			int scopeLevelOfDeadCode = 0;
@@ -53,13 +54,13 @@ namespace BrainfuckCompiler
 			foreach (var command in commands)
 			{
 				if ((command == '+' || command == '-') && InDeadCode && scopeLevel == 0)
-					InDeadCode = false;
+					LoopsAreDeadCode = false;
 
 				if(command == '[')
 				{
 					scopeLevel++;
 
-					if(!InDeadCode && previousCommand == '0' || previousCommand == ']')
+					if(!InDeadCode && !LoopsAreDeadCode && previousCommand == '0' || previousCommand == ']')
 					{
 						scopeLevelOfDeadCode = scopeLevel;
 						InDeadCode = true;
