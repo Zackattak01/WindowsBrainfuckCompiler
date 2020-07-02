@@ -54,18 +54,16 @@ However the compiler will optimize this to:
 The compiler will remove code that is know to be dead.
 
 Loops at the begining of a program:
-`[this wont be compiled!.,.+--+.<>>>><<][Neither will this!>><+-]`
+```[this wont be compiled!.,.+--+.<>>>><<][Neither will this!>><+-]```
 
 A loop following another loop
-`+[this will be compiled][this won't]`
+```+[this will be compiled][this won't]```
 
 
 ## Known Construct Replacement
 
-Several common constructs are used in brainfuck such as:
-```
-[-] and [+]
-```
+Several common constructs are used in brainfuck such as: `[-] and [+]`
+
 These two constructs always set the cell to zero so instead of using a loop to do it we can directly set the cell to zero.
 
 Empty loops (`[]`) are entirly eliminated from the program wether or not they run.
